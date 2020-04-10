@@ -16,22 +16,23 @@ app.get("/repositories", (request, response) => {
   //Desestruturando a query 
   const { title, url, techs, likes } = request.query;
 
-  //FILTROS DE LISTAGEM
-  const titleInfo = title 
-    ? repositories.filter(repository => repository.title.includes(title))
-    : repositories;
-
   //Lista todos os repositorios retornando um JSON para repositories
-  return response.json(titleInfo);
+  return response.json(repositories);
 });
 
 //CREATE
-app.post("/repositories", (request, response) => {
+app.post("/repositories", (request, response) => { 
   const { title, url, techs } = request.body;
 
   //Após instalado o uuid
   //Criar variavel que receberá o objeto desestruturado
-  const repository = { id: uuid(), title, url, techs };
+  const repository = { 
+    id: uuid(),
+    title,
+    url,
+    techs,
+    likes:0,
+  };
 
   //Enviará para repositories o respository
   repositories.push(repository);
@@ -61,6 +62,7 @@ app.put("/repositories/:id", (request, response) => {
     title,
     url,
     techs,
+    likes: repositories[repositoryIndex].likes 
   };
 
   //na posição do vetor informado será atribuido os valores do objeto repository
@@ -93,9 +95,18 @@ app.delete("/repositories/:id", (request, response) => {
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  return response.json([
-    'Like 1'
-  ]);
+  const { id } = request.params;
+
+  const repository = repositories
+    .find(repository => repository.id == id);
+
+  if (!repository){
+    return response.status(400).send();
+  } 
+
+  repository.likes += 1;
+
+  return response.json(repository);
 });
 
 module.exports = app;
